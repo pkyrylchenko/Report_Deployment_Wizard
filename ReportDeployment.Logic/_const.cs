@@ -19,7 +19,6 @@ namespace Report_Deployment_Wizard
         #endregion
         #region LYNQ DS name
         public const string C_LYNQSharedDSName = "LYNQmom";
-
         #endregion
         #region RS.EXE path
         public const string C_RS_EXE_PATH = @"C:\Program Files\Microsoft SQL Server Reporting Services\Shared Tools";
