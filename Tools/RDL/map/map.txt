@@ -1,0 +1,6 @@
+LYNQmom,WeeklyReport
+LYNQmom,DailyReport
+LYNQmom,SampleStandartDeviationsReport
+LYNQmom,DiffReport
+LYNQmom,TemplateRoport
+LYNQmom,TemplateActivityDetailReport

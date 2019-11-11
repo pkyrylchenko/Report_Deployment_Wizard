@@ -1,0 +1,1 @@
+C:\Program Files (x86)\Microsoft SQL Server\120\Tools\Binn>rs.exe -i "C:\Tools\RDL\rss\deploy.rss" -s http://tbs-tcs-bi01/ReportServer

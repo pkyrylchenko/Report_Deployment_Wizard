@@ -1,0 +1,817 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:cl="http://schemas.microsoft.com/sqlserver/reporting/2010/01/componentdefinition" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="SharedDataSource">
+      <DataSourceReference>/LYNQmom</DataSourceReference>
+      <rd:SecurityType>Integrated</rd:SecurityType>
+      <rd:DataSourceID>239c930c-e1fc-4c78-88c7-3b914c9ebe3f</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DataSet1">
+      <Query>
+        <DataSourceName>SharedDataSource</DataSourceName>
+        <CommandText>SELECT DISTINCT
+ aEmployeeCode
+ ,e.lName
+,lName AS Sort
+ 
+
+FROM
+  Lynq_ME_Trace_Employee e INNER JOIN Lynq_ME_Activity a  with (nolock) on  e.lUID =  a.aTraceEmployeeUID
+UNION 
+SELECT NULL, 'Show All Employees', '0'
+
+ORDER BY 3</CommandText>
+        <rd:DesignerState>
+          <QueryDefinition xmlns="http://schemas.microsoft.com/ReportingServices/QueryDefinition/Relational">
+            <SelectedColumns>
+              <ColumnExpression ColumnOwner="Lynq_ME_Trace_Employee" ColumnName="lCode" />
+              <ColumnExpression ColumnOwner="Lynq_ME_Trace_Employee" ColumnName="lName" />
+            </SelectedColumns>
+          </QueryDefinition>
+        </rd:DesignerState>
+      </Query>
+      <Fields>
+        <Field Name="aEmployeeCode">
+          <DataField>aEmployeeCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="lName">
+          <DataField>lName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Sort">
+          <DataField>Sort</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DataSet2">
+      <Query>
+        <DataSourceName>SharedDataSource</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@EmployeeAll">
+            <Value>=Parameters!EmployeeAll.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>
+select
+	TrxSum.*,
+	TraceTask.tItemDescription,
+	ActivityDetail.*
+	
+
+from	
+
+
+	(
+select
+			max(aUID) as aUID,
+			max(aTraceTaskUID) as TaskUID,
+			
+			aDate,
+			aStatus,
+			case [aStatus]
+								  when 0 then 'UnPosted'
+								  when 1 then 'Posted'
+								  when 2 then 'PendingPosting'
+								  when 3 then 'PostingError'
+								  when 4 then 'PendingUnposting'
+								  when 5 then 'UnpostingError'
+								  when 6 then 'Excluded'
+								  when 7 then 'UNABLE TO POST'
+								  else 'Unknown' end									 as [StatusDesc],			
+			aType,
+			case aType
+					when 0 then 'Unknown'
+					when 1 then 'LaborTime'
+					when 1024 then 'MachineTime'
+					when 2 then 'Quantity'
+					when 4 then 'StatusChange'
+					when 8 then 'OfficeTime'
+					when 16 then 'Scrap'
+					when 32 then 'MaterialReject'
+					when 64 then 'MaterialIssue'
+					when 128 then 'ProductionIssue'
+					else 'Unknown' end									 as [TypeDesc],
+			aOperationalType,
+			
+			aEmployeeCode,
+			aFacilityCode,
+			aTaskCode,
+			aOperationCode,
+			aJobCode,
+			
+		round(sum(aOutcomeQty),2) as Quantity,
+		round(sum(aLabourHours),2) as [LabourHours],
+		round(sum(aFacilityHours),2) as FacilityHours,
+		round(sum(aOutcomeScrap),2) as Scrap,
+		round(sum(aOutcomeCBOMQuantity),2) as IssueRejectQty,
+		round(sum(aOfficeTimeHours),2) as [OfficeTimeHours]
+
+
+		
+		
+
+
+			
+		FROM Lynq_ME_Activity with (nolock)
+		where aEmployeeCode = @EmployeeAll OR @EmployeeAll is null
+		group by
+			aDate,
+			aEmployeeCode,
+			aFacilityCode,
+			aTaskCode,
+			aJobCode,
+			aOperationCode,
+			aType,
+			aOperationalType,
+			aStatus
+			
+			
+
+  ) TrxSum
+
+  
+  left  join  Lynq_ME_ActivityDetail ActivityDetail  with (nolock) on TrxSum.aUID = ActivityDetail.dActivityID
+  left  join  Lynq_ME_Trace_Task TraceTask with (nolock) on TrxSum.TaskUID = TraceTask.tUID</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="aUID">
+          <DataField>aUID</DataField>
+          <rd:TypeName>System.Guid</rd:TypeName>
+        </Field>
+        <Field Name="aDate">
+          <DataField>aDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="TaskUID">
+          <DataField>TaskUID</DataField>
+          <rd:TypeName>System.Guid</rd:TypeName>
+        </Field>
+        <Field Name="aStatus">
+          <DataField>aStatus</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="StatusDesc">
+          <DataField>StatusDesc</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="aType">
+          <DataField>aType</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="TypeDesc">
+          <DataField>TypeDesc</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="aOperationalType">
+          <DataField>aOperationalType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="aEmployeeCode">
+          <DataField>aEmployeeCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="aFacilityCode">
+          <DataField>aFacilityCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="aTaskCode">
+          <DataField>aTaskCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="aOperationCode">
+          <DataField>aOperationCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="aJobCode">
+          <DataField>aJobCode</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Quantity">
+          <DataField>Quantity</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="LabourHours">
+          <DataField>LabourHours</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="FacilityHours">
+          <DataField>FacilityHours</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Scrap">
+          <DataField>Scrap</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="IssueRejectQty">
+          <DataField>IssueRejectQty</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="OfficeTimeHours">
+          <DataField>OfficeTimeHours</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="tItemDescription">
+          <DataField>tItemDescription</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ID">
+          <DataField>ID</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="dQuantity">
+          <DataField>dQuantity</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="dActivityID">
+          <DataField>dActivityID</DataField>
+          <rd:TypeName>System.Guid</rd:TypeName>
+        </Field>
+        <Field Name="dInfo1">
+          <DataField>dInfo1</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dInfo2">
+          <DataField>dInfo2</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dInfo3">
+          <DataField>dInfo3</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dInfo4">
+          <DataField>dInfo4</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dInfo5">
+          <DataField>dInfo5</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dOriginatedID">
+          <DataField>dOriginatedID</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="dSerialLotNumberInfo">
+          <DataField>dSerialLotNumberInfo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dBinInfo">
+          <DataField>dBinInfo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dTraceabilityCodeInfo">
+          <DataField>dTraceabilityCodeInfo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dScrapReasonInfo">
+          <DataField>dScrapReasonInfo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dRejectReasonInfo">
+          <DataField>dRejectReasonInfo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dLocationInfo">
+          <DataField>dLocationInfo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dWarehouseInfo">
+          <DataField>dWarehouseInfo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dTimeStamp">
+          <DataField>dTimeStamp</DataField>
+          <rd:TypeName>System.Byte[]</rd:TypeName>
+        </Field>
+        <Field Name="aForceStatSync">
+          <DataField>aForceStatSync</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="dModifiedBy">
+          <DataField>dModifiedBy</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Textbox Name="ReportTitle">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value> Activity/Detail Report Template</Value>
+                    <Style>
+                      <FontFamily>IBM Plex Mono</FontFamily>
+                      <FontSize>30pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:WatermarkTextbox>Title</rd:WatermarkTextbox>
+            <rd:DefaultName>ReportTitle</rd:DefaultName>
+            <Top>0.28472in</Top>
+            <Left>3.07292in</Left>
+            <Height>0.51389in</Height>
+            <Width>8.60069in</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Textbox Name="ExecutionTime">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=Globals!ExecutionTime</Value>
+                    <Style>
+                      <FontFamily>IBM Plex Mono</FontFamily>
+                      <FontSize>16pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>ExecutionTime</rd:DefaultName>
+            <Top>0.01389in</Top>
+            <Left>3.34375in</Left>
+            <Height>0.3125in</Height>
+            <Width>2.98959in</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Image Name="Image1">
+            <Source>Embedded</Source>
+            <Value>download</Value>
+            <Sizing>FitProportional</Sizing>
+            <Height>0.94098in</Height>
+            <Width>2.62625in</Width>
+            <ZIndex>2</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+            <cl:ComponentMetadata>
+              <cl:ComponentId>a2702a2c-0dab-4560-84f4-a54ec29b2580</cl:ComponentId>
+              <cl:SourcePath>/Report Parts/Image1</cl:SourcePath>
+              <cl:SyncDate>2019-06-06T13:19:50.0102585+02:00</cl:SyncDate>
+            </cl:ComponentMetadata>
+          </Image>
+          <Tablix Name="Tablix1">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>1.79861in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>3.12153in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.96528in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox23">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Employee Code</Value>
+                                  <Style>
+                                    <FontFamily>IBM Plex Mono</FontFamily>
+                                    <FontSize>13pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox23</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#ff5100</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox25">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Item Name</Value>
+                                  <Style>
+                                    <FontFamily>IBM Plex Mono</FontFamily>
+                                    <FontSize>13pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox25</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#ff5100</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox27">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Date</Value>
+                                  <Style>
+                                    <FontFamily>IBM Plex Mono</FontFamily>
+                                    <FontSize>13pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox27</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#ff5100</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="aEmployeeCode">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!aEmployeeCode.Value</Value>
+                                  <Style>
+                                    <FontFamily>IBM Plex Mono</FontFamily>
+                                    <Format>0.00;(0.00)</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>aEmployeeCode</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="tItemDescription">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!tItemDescription.Value</Value>
+                                  <Style>
+                                    <FontFamily>IBM Plex Mono</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>tItemDescription</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="aDate">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!aDate.Value</Value>
+                                  <Style>
+                                    <FontFamily>IBM Plex Mono</FontFamily>
+                                    <Format>d</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>aDate</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember>
+                  <Group Name="Details">
+                    <Filters>
+                      <Filter>
+                        <FilterExpression>=Fields!aDate.Value</FilterExpression>
+                        <Operator>GreaterThanOrEqual</Operator>
+                        <FilterValues>
+                          <FilterValue>=Parameters!prmStartDate.Value</FilterValue>
+                        </FilterValues>
+                      </Filter>
+                      <Filter>
+                        <FilterExpression>=Fields!aDate.Value</FilterExpression>
+                        <Operator>LessThanOrEqual</Operator>
+                        <FilterValues>
+                          <FilterValue>=Parameters!prmEndDAte.Value</FilterValue>
+                        </FilterValues>
+                      </Filter>
+                    </Filters>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!aEmployeeCode.Value</Value>
+                    </SortExpression>
+                    <SortExpression>
+                      <Value>=Fields!aDate.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                  <Visibility>
+                    <Hidden>=IIf(IsNothing(Fields!tItemDescription.Value),true, false)</Hidden>
+                  </Visibility>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>DataSet2</DataSetName>
+            <Top>0.94098in</Top>
+            <Height>0.5in</Height>
+            <Width>6.88542in</Width>
+            <ZIndex>3</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+            <cl:ComponentMetadata>
+              <cl:ComponentId>57322ea9-e70a-4d55-835d-25d7d92c80d4</cl:ComponentId>
+              <cl:SourcePath>/Report Parts/Tablix1</cl:SourcePath>
+              <cl:SyncDate>2019-06-06T13:19:50.4398894+02:00</cl:SyncDate>
+            </cl:ComponentMetadata>
+          </Tablix>
+        </ReportItems>
+        <Height>2.77431in</Height>
+        <Style>
+          <Border>
+            <Style>None</Style>
+          </Border>
+        </Style>
+      </Body>
+      <Width>28.435in</Width>
+      <Page>
+        <PageFooter>
+          <Height>5.7in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </PageFooter>
+        <LeftMargin>1in</LeftMargin>
+        <RightMargin>1in</RightMargin>
+        <TopMargin>1in</TopMargin>
+        <BottomMargin>1in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="prmServer">
+      <DataType>String</DataType>
+      <Prompt>Server Name</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="prmDatabase">
+      <DataType>String</DataType>
+      <Prompt>Database Name</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="EmployeeAll">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <DefaultValue>
+        <Values>
+          <Value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true" />
+        </Values>
+      </DefaultValue>
+      <Prompt>Employee</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>DataSet1</DataSetName>
+          <ValueField>aEmployeeCode</ValueField>
+          <LabelField>lName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="prmStartDate">
+      <DataType>DateTime</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>Choose a date range( start )</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="prmEndDAte">
+      <DataType>DateTime</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=now()</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Choose a date range( end )</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>3</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>prmEndDAte</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>prmServer</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>prmDatabase</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>prmStartDate</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>EmployeeAll</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <EmbeddedImages>
+    <EmbeddedImage Name="download">
+      <MIMEType>image/jpeg</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportServerUrl>http://localhost/ReportServer</rd:ReportServerUrl>
+  <rd:ReportID>fd58513a-2bb1-42a6-882e-d65461c9968f</rd:ReportID>
+</Report>
